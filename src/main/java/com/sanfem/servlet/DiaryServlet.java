@@ -72,7 +72,11 @@ public class DiaryServlet extends HttpServlet {
 
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = parseId(request.getParameter("id"));
+        if (id < 0) {
+            response.sendRedirect(request.getContextPath() + "/diary");
+            return;
+        }
         Diary diary = diaryDAO.findById(id);
         request.setAttribute("diary", diary);
         request.getRequestDispatcher("/jsp/diary/detail.jsp").forward(request, response);
@@ -80,7 +84,11 @@ public class DiaryServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = parseId(request.getParameter("id"));
+        if (id < 0) {
+            response.sendRedirect(request.getContextPath() + "/diary");
+            return;
+        }
         Diary diary = diaryDAO.findById(id);
         request.setAttribute("diary", diary);
         request.getRequestDispatcher("/jsp/diary/edit.jsp").forward(request, response);
@@ -99,8 +107,13 @@ public class DiaryServlet extends HttpServlet {
 
     private void updateDiary(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+        int id = parseId(request.getParameter("id"));
+        if (id < 0) {
+            response.sendRedirect(request.getContextPath() + "/diary");
+            return;
+        }
         Diary diary = new Diary();
-        diary.setId(Integer.parseInt(request.getParameter("id")));
+        diary.setId(id);
         diary.setTitle(request.getParameter("title"));
         diary.setContent(request.getParameter("content"));
         diary.setMood(request.getParameter("mood"));
@@ -111,8 +124,23 @@ public class DiaryServlet extends HttpServlet {
 
     private void deleteDiary(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = parseId(request.getParameter("id"));
+        if (id < 0) {
+            response.sendRedirect(request.getContextPath() + "/diary");
+            return;
+        }
         diaryDAO.delete(id);
         response.sendRedirect(request.getContextPath() + "/diary");
+    }
+
+    private int parseId(String param) {
+        if (param == null || param.isEmpty()) {
+            return -1;
+        }
+        try {
+            return Integer.parseInt(param);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 }

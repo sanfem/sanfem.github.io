@@ -72,7 +72,11 @@ public class CodeServlet extends HttpServlet {
 
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = parseId(request.getParameter("id"));
+        if (id < 0) {
+            response.sendRedirect(request.getContextPath() + "/code");
+            return;
+        }
         Code code = codeDAO.findById(id);
         request.setAttribute("code", code);
         request.getRequestDispatcher("/jsp/code/detail.jsp").forward(request, response);
@@ -80,7 +84,11 @@ public class CodeServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = parseId(request.getParameter("id"));
+        if (id < 0) {
+            response.sendRedirect(request.getContextPath() + "/code");
+            return;
+        }
         Code code = codeDAO.findById(id);
         request.setAttribute("code", code);
         request.getRequestDispatcher("/jsp/code/edit.jsp").forward(request, response);
@@ -99,8 +107,13 @@ public class CodeServlet extends HttpServlet {
 
     private void updateCode(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+        int id = parseId(request.getParameter("id"));
+        if (id < 0) {
+            response.sendRedirect(request.getContextPath() + "/code");
+            return;
+        }
         Code code = new Code();
-        code.setId(Integer.parseInt(request.getParameter("id")));
+        code.setId(id);
         code.setTitle(request.getParameter("title"));
         code.setLanguage(request.getParameter("language"));
         code.setDescription(request.getParameter("description"));
@@ -111,8 +124,23 @@ public class CodeServlet extends HttpServlet {
 
     private void deleteCode(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = parseId(request.getParameter("id"));
+        if (id < 0) {
+            response.sendRedirect(request.getContextPath() + "/code");
+            return;
+        }
         codeDAO.delete(id);
         response.sendRedirect(request.getContextPath() + "/code");
+    }
+
+    private int parseId(String param) {
+        if (param == null || param.isEmpty()) {
+            return -1;
+        }
+        try {
+            return Integer.parseInt(param);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 }
